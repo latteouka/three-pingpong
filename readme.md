@@ -1,1 +1,3 @@
-This is a template made from [ikeryou](https://twitter.com/ikeryou)'s github project.
+Basic ping-pong rendering.
+
+https://tympanus.net/codrops/2022/11/25/conways-game-of-life-cellular-automata-and-renderbuffers-in-three-js/
