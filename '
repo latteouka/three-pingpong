@@ -11,12 +11,12 @@ export class Item extends MyObject3D {
   private _meshOffscreen: THREE.Mesh;
   private dataTexture: THREE.DataTexture;
 
-  private _material: THREE.ShaderMaterial;
-  private _bufferMaterial: THREE.ShaderMaterial;
+  public material: THREE.ShaderMaterial;
+  public bufferMaterial: THREE.ShaderMaterial;
 
-  private _sceneOffscreen = new THREE.Scene();
+  public offscreenScene = new THREE.Scene();
 
-  private _renderTargetA = new THREE.WebGLRenderTarget(
+  public renderTargetA = new THREE.WebGLRenderTarget(
     Func.instance.sw(),
     Func.instance.sh(),
     {
@@ -28,7 +28,7 @@ export class Item extends MyObject3D {
     }
   );
 
-  private _renderTargetB = new THREE.WebGLRenderTarget(
+  public renderTargetB = new THREE.WebGLRenderTarget(
     Func.instance.sw(),
     Func.instance.sh(),
     {
@@ -48,7 +48,7 @@ export class Item extends MyObject3D {
 
     // just a container for offscreen render result
     // texture will be filled by offscreen render result texture
-    this._material = new THREE.ShaderMaterial({
+    this.material = new THREE.ShaderMaterial({
       vertexShader: vertex,
       fragmentShader: fragment,
       uniforms: {
@@ -57,7 +57,7 @@ export class Item extends MyObject3D {
       },
     });
 
-    this._bufferMaterial = new THREE.ShaderMaterial({
+    this.bufferMaterial = new THREE.ShaderMaterial({
       vertexShader: vertex,
       fragmentShader: fragmentBuffer,
       uniforms: {
@@ -69,14 +69,14 @@ export class Item extends MyObject3D {
       },
     });
 
-    this._mesh = new THREE.Mesh(geometry, this._material);
+    this._mesh = new THREE.Mesh(geometry, this.material);
     this._mesh.scale.set(Func.instance.sw(), Func.instance.sh(), 1);
     this.add(this._mesh);
 
     // offscreen
-    this._meshOffscreen = new THREE.Mesh(geometry, this._bufferMaterial);
-    this._meshOffscreen.scale.set(Func.instance.sw(), Func.instance.sh(), 1);
-    this._sceneOffscreen.add(this._meshOffscreen);
+    this.offscreenMesh = new THREE.Mesh(geometry, this.bufferMaterial);
+    this.offscreenMesh.scale.set(Func.instance.sw(), Func.instance.sh(), 1);
+    this.offscreenScene.add(this.offscreenMesh);
   }
 
   protected createDataTexture() {
@@ -113,26 +113,6 @@ export class Item extends MyObject3D {
     return texture;
   }
 
-  public render(
-    renderer: THREE.WebGLRenderer,
-    camera: THREE.PerspectiveCamera
-  ): void {
-    // offscreen render
-    renderer.setRenderTarget(this._renderTargetA);
-    renderer.render(this._sceneOffscreen, camera);
-
-    // real quad mesh's texture
-    this._material.uniforms.u_texture.value = this._renderTargetA.texture;
-    renderer.setRenderTarget(null);
-
-    // ping-pong
-    // the previous frame's *output* becomes the next frame's *input*
-    const temp = this._renderTargetA;
-    this._renderTargetA = this._renderTargetB;
-    this._renderTargetB = temp;
-    this._bufferMaterial.uniforms.u_texture.value = this._renderTargetB.texture;
-  }
-
   protected _update(): void {
     super._update();
   }
@@ -141,7 +121,7 @@ export class Item extends MyObject3D {
     super._resize();
     this._mesh.scale.set(Func.instance.sw(), Func.instance.sh(), 1);
 
-    this._bufferMaterial.uniforms.u_resolution.value.set(
+    this.bufferMaterial.uniforms.u_resolution.value.set(
       Func.instance.sw(),
       Func.instance.sh()
     );

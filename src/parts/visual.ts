@@ -32,24 +32,9 @@ export class Visual extends Canvas {
   private _render(): void {
     this.renderer.setClearColor("#000", 1);
 
-    // offscreen render
-    this.renderer.setRenderTarget(this._item.renderTargetA);
-    this.renderer.render(this._item.offscreenScene, this.cameraPers);
+    this._item.render(this.renderer, this.cameraPers);
 
-    // real quad mesh's texture
-    this._item.material.uniforms.u_texture.value =
-      this._item.renderTargetA.texture;
-
-    this.renderer.setRenderTarget(null);
     this.renderer.render(this.mainScene, this.cameraPers);
-
-    // ping-pong
-    // the previous frame's *output* becomes the next frame's *input*
-    const temp = this._item.renderTargetA;
-    this._item.renderTargetA = this._item.renderTargetB;
-    this._item.renderTargetB = temp;
-    this._item.materialBuffer.uniforms.u_texture.value =
-      this._item.renderTargetB.texture;
   }
 
   public isNowRenderFrame(): boolean {
